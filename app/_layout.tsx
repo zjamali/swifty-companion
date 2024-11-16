@@ -1,37 +1,67 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import { router, Stack, useLocalSearchParams, useRouter } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { useContext, useEffect } from "react";
+import "react-native-reanimated";
+import { AuthContext, AuthProvider } from "@/store/context";
+import { Colors } from "@/constants/Colors";
 
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+const MyApp = () => {
+  const { isAuthenticated } = useContext(AuthContext);
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    if (isAuthenticated) {
+      router.replace({
+        pathname: "/search",
+      });
     }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
-  }
+  }, [isAuthenticated]);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-    </ThemeProvider>
+    <Stack>
+      <Stack.Screen
+        name="index"
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="search/index"
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="profile/[id]"
+        options={{
+          headerTitle: "Profile",
+          headerBackTitle: "Search",
+          headerTransparent: true,
+          headerTitleStyle: {
+            color: Colors.text,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="modal"
+        options={{
+          presentation: "modal",
+          headerTitle: "Error",
+        }}
+      />
+    </Stack>
+  );
+};
+
+export default function RootLayout() {
+  useEffect(() => {
+    SplashScreen.hideAsync();
+  }, []);
+
+  return (
+    <AuthProvider>
+      <MyApp />
+    </AuthProvider>
   );
 }

@@ -4,13 +4,24 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 
 ## Get started
 
-1. Install dependencies
+1. Set 42 enviroment
+
+   ```yaml
+   #.env
+
+   EXPO_PUBLIC_API_URL=https://api.intra.42.fr/
+   EXPO_PUBLIC_API_SECRET=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
+   EXPO_PUBLIC_API_CLIENT=8f31a6c907677ba8fc1e1c61aa88023279115a8d48cee399ecb968e5bca7e98f
+   EXPO_PUBLIC_REDIRECT_URL=app://com.zjamali.swifty.companion
+   ```
+
+2. Install dependencies
 
    ```bash
    npm install
    ```
 
-2. Start the app
+3. Start the app
 
    ```bash
     npx expo start
