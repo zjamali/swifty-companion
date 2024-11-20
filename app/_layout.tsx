@@ -46,8 +46,9 @@ const MyApp = () => {
       <Stack.Screen
         name="modal"
         options={{
-          presentation: "modal",
-          headerTitle: "Error",
+          presentation: "transparentModal",
+          headerShown: false,
+          fullScreenGestureEnabled: false,
         }}
       />
     </Stack>

@@ -16,17 +16,18 @@ import {
   ScrollView,
 } from "react-native-gesture-handler";
 import { useEffect, useState } from "react";
-import { CursusUser, ProjectUser, User } from "@/constants/types";
+import { CursusUser, ProfileType, ProjectUser, User } from "@/constants/types";
 import SelectDropdown from "react-native-select-dropdown";
 import DropdownIcon from "@/assets/icons/dropdown";
 import React from "react";
-import darthVaderProfile from "@/assets/images/darth vader.png";
+import defaultProfileImage from "@/assets/images/default.png";
 import LocationIcon from "@/assets/icons/location";
 import CheckIcon from "@/assets/icons/validate";
 import FailedIcon from "@/assets/icons/failed";
 import profileQuery from "@/api/profileQuery";
+import { StatusBar } from "expo-status-bar";
 
-function Space({ height }: { height: DimensionValue }) {
+export function Space({ height }: { height: DimensionValue }) {
   return <View style={{ height: height, width: "100%" }}></View>;
 }
 
@@ -35,7 +36,7 @@ function CursusSelectionDropDown({
   selectedCursus,
   setSelectedCursus,
 }: {
-  cursusList: [CursusUser] | [];
+  cursusList: CursusUser[] | [];
   selectedCursus: CursusUser;
   setSelectedCursus: React.Dispatch<
     React.SetStateAction<CursusUser | undefined>
@@ -102,7 +103,7 @@ function Projects({
   projects,
   selectedCursus,
 }: {
-  projects: [ProjectUser];
+  projects: ProjectUser[] | [];
   selectedCursus: CursusUser;
 }) {
   return (
@@ -146,11 +147,15 @@ function Projects({
                 }}
               >
                 <Text style={{ fontSize: 12 }}>{project?.project.name}</Text>
-                {project["validated?"] === true ? (
+                {project.status === "finished" && project["validated?"] ? (
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
                     <CheckIcon color={"green"} />
                     <Text
-                      style={{ fontSize: 12, color: "green", fontWeight: 700 }}
+                      style={{
+                        fontSize: 12,
+                        color: "green",
+                        fontWeight: 700,
+                      }}
                     >
                       {project.final_mark}
                     </Text>
@@ -158,7 +163,11 @@ function Projects({
                 ) : project.status === "in_progress" ? (
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
                     <Text
-                      style={{ fontSize: 12, color: "orange", fontWeight: 700 }}
+                      style={{
+                        fontSize: 12,
+                        color: "orange",
+                        fontWeight: 700,
+                      }}
                     >
                       In Progress{" "}
                     </Text>
@@ -268,8 +277,8 @@ function ProfileInformation({
   selectedCursus,
   setSelectedCursus,
 }: {
-  profile: User;
-  cursusList: [CursusUser] | [];
+  profile: ProfileType;
+  cursusList: CursusUser[] | [];
   selectedCursus: CursusUser;
   setSelectedCursus: React.Dispatch<
     React.SetStateAction<CursusUser | undefined>
@@ -306,15 +315,13 @@ function ProfileInformation({
       >
         <Image
           source={
-            profile?.image?.versions?.large
-              ? { uri: profile?.image.versions.large }
-              : darthVaderProfile
+            profile?.image ? { uri: profile?.image } : defaultProfileImage
           }
           style={{ height: 120, width: 120, borderRadius: 120 }}
         />
         <View style={{ flex: 1, alignItems: "center" }}>
           <Text style={{ color: Colors.text, fontWeight: 700 }}>
-            {profile?.usual_full_name}
+            {profile?.fullName}
           </Text>
           <Text style={{ color: Colors.text, fontWeight: 500 }}>
             {profile?.login}
@@ -407,7 +414,7 @@ function ProfileInformation({
       <View style={{ flexDirection: "row", justifyContent: "center", gap: 5 }}>
         <LocationIcon width={16} height={16} />
         <Text style={{ color: Colors.text, fontWeight: 700, fontSize: 15 }}>
-          {profile?.campus[0].city}
+          {profile?.city}
         </Text>
       </View>
       <View
@@ -444,11 +451,13 @@ function ProfileInformation({
             }}
           >
             <View
-              style={{
-                flex: 1,
-                backgroundColor: "rgb(35, 90, 22)",
-                width: `${level?.percentage}%`,
-              } as ViewStyle}
+              style={
+                {
+                  flex: 1,
+                  backgroundColor: "rgb(35, 90, 22)",
+                  width: `${level?.percentage}%`,
+                } as ViewStyle
+              }
             ></View>
           </View>
         </View>
@@ -460,16 +469,19 @@ function ProfileInformation({
 export default function Profile() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [selectedCursus, setSelectedCursus] = useState<CursusUser>();
-  const [cursusList, setCursusList] = useState<[CursusUser] | []>([]);
+  const [cursusList, setCursusList] = useState<CursusUser[] | []>([]);
   const [isLoading, profile] = profileQuery(id);
 
   useEffect(() => {
-    setCursusList(profile?.cursus_users);
-    setSelectedCursus(profile?.cursus_users[profile?.cursus_users.length - 1]);
+    if (profile) {
+      setCursusList(profile.cursusList);
+      setSelectedCursus(profile?.cursusList[profile.cursusList.length - 1]);
+    }
   }, [profile]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      <StatusBar style="light" />
       <Image source={backgorundImage} style={background} />
       <SafeAreaView
         style={{
@@ -479,25 +491,27 @@ export default function Profile() {
           paddingHorizontal: 20,
         }}
       >
-        {isLoading ? (
+        {isLoading && !profile ? (
           <ActivityIndicator style={{ marginTop: 89 }} />
         ) : (
-          <ScrollView style={container}>
-            <ProfileInformation
-              profile={profile!}
-              cursusList={cursusList}
-              selectedCursus={selectedCursus!}
-              setSelectedCursus={setSelectedCursus}
-            />
-            <Space height={20} />
-            <Projects
-              projects={profile?.projects_users}
-              selectedCursus={selectedCursus!}
-            />
-            <Space height={20} />
-            <Skills selectedCursus={selectedCursus!} />
-            <Space height={20} />
-          </ScrollView>
+          profile && (
+            <ScrollView style={container}>
+              <ProfileInformation
+                profile={profile!}
+                cursusList={cursusList}
+                selectedCursus={selectedCursus!}
+                setSelectedCursus={setSelectedCursus}
+              />
+              <Space height={20} />
+              <Projects
+                projects={profile.projects}
+                selectedCursus={selectedCursus!}
+              />
+              <Space height={20} />
+              <Skills selectedCursus={selectedCursus!} />
+              <Space height={20} />
+            </ScrollView>
+          )
         )}
       </SafeAreaView>
     </GestureHandlerRootView>

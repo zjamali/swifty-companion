@@ -1,43 +1,25 @@
-import * as SecureStore from "expo-secure-store";
 import { useState } from "react";
-import { FetchOptionsType, OAuthTokenResponse, User } from "@/constants/types";
-import * as Updates from "expo-updates";
+import { SearchUserType, User } from "@/constants/types";
+import axiosInstance from "./api-client";
 
 export default function searchQuery(): any {
-  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
-
   const [isLoading, setLoading] = useState(false);
-  const [users, setUsers] = useState<[User]>();
-
-  const token = SecureStore.getItem("token");
-  let accessToken: string = "";
-
-  if (token) {
-    const { access_token }: OAuthTokenResponse = JSON.parse(token);
-    accessToken = access_token;
-  } else {
-    Updates.reloadAsync();
-  }
+  const [users, setUsers] = useState<[SearchUserType] | null>();
 
   async function searchQuery(login: string) {
     setLoading(true);
-    const request: FetchOptionsType = {};
-    request.headers = {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    };
     try {
-      const response = await fetch(
-        `${apiUrl}/v2/users?search[login]=${login}`,
-        request
+      const response = await axiosInstance.get(
+        `/v2/users?search[login]=${login}`
       );
-      const users: [User] = await response.json();
+
+      const users: [SearchUserType] = response.data;
       setUsers(users);
       setLoading(false);
     } catch (error) {
-      console.error(error);
+      setLoading(false);
+      setUsers(null);
     }
   }
-
   return [searchQuery, isLoading, users, setUsers];
 }

@@ -10,7 +10,7 @@ import {
   Button,
 } from "react-native";
 import backgorundImage from "@/assets/images/default-cover-image.jpg";
-import darthVaderProfile from "@/assets/images/darth vader.png";
+import defaultProfileImage from "@/assets/images/default.png";
 import * as SecureStore from "expo-secure-store";
 import { Colors } from "@/constants/Colors";
 import { ScrollView, TextInput } from "react-native-gesture-handler";
@@ -18,9 +18,10 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { User } from "@/constants/types";
+import { SearchUserType } from "@/constants/types";
 import searchHook from "@/api/searchQuery";
 import React from "react";
+import { StatusBar } from "expo-status-bar";
 
 function SearchBar({
   search,
@@ -62,6 +63,7 @@ function SearchBar({
         value={search}
         onChangeText={onChangeText}
         keyboardType="ascii-capable"
+        autoCorrect={false}
       />
       <View
         style={{
@@ -81,7 +83,7 @@ function SearchBar({
   );
 }
 
-export function UserCard({ user }: { user: User }) {
+export function UserCard({ user }: { user: SearchUserType }) {
   return (
     <Pressable
       style={{
@@ -101,11 +103,7 @@ export function UserCard({ user }: { user: User }) {
       }}
     >
       <Image
-        source={
-          user.image.versions.small
-            ? { uri: user.image.versions.small }
-            : darthVaderProfile
-        }
+        source={user.image ? { uri: user.image } : defaultProfileImage}
         style={[{ borderRadius: 50, width: 50, height: 50 }]}
       />
       <View>
@@ -118,7 +116,7 @@ export function UserCard({ user }: { user: User }) {
         >
           {user.login}
         </Text>
-        <Text>{user.usual_full_name}</Text>
+        <Text>{user.fullName}</Text>
       </View>
     </Pressable>
   );
@@ -136,6 +134,7 @@ export default function Search() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      <StatusBar style="light" />
       <View style={container}>
         <Image source={backgorundImage} style={background} />
         <SafeAreaView
@@ -169,7 +168,7 @@ export default function Search() {
                     user not found
                   </Text>
                 )}
-                {users?.map((userItem: User) => {
+                {users?.map((userItem: SearchUserType) => {
                   return <UserCard user={userItem} key={userItem.id} />;
                 })}
               </>

@@ -13,6 +13,7 @@ import SchoolLogo from "@/assets/icons/42Logo";
 
 import * as WebBrowser from "expo-web-browser";
 import useAuth from "@/api/authHook";
+import { StatusBar } from "expo-status-bar";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -21,6 +22,7 @@ export default function Login() {
 
   return (
     <View style={loginView}>
+      <StatusBar style="light" />
       <Image source={backgorundImage} style={loginBackground} />
       <Pressable style={ButtonContaine} onPress={() => promptAsync()}>
         <Text style={loginText}>Sign in with</Text>

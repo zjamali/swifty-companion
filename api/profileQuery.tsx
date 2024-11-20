@@ -1,43 +1,26 @@
-import * as SecureStore from "expo-secure-store";
 import { useEffect, useState } from "react";
-import { FetchOptionsType, OAuthTokenResponse, User } from "@/constants/types";
-import { router } from "expo-router";
+import axiosInstance from "./api-client";
+import { ProfileType, User } from "@/constants/types";
 
-export default function profileQuery(id: string): any {
+export default function profileQuery(
+  id: string
+): [
+  boolean,
+  ProfileType | null,
+  React.Dispatch<React.SetStateAction<ProfileType | null>>
+] {
   const [isLoading, setLoading] = useState(false);
-  const token = SecureStore.getItem("token");
-  let accessToken: String = "";
-  const [profile, setProfile] = useState<User | null>(null);
-
-  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
-
-  if (token) {
-    const { access_token }: OAuthTokenResponse = JSON.parse(token);
-    accessToken = access_token;
-  }
+  const [profile, setProfile] = useState<ProfileType | null>(null);
 
   async function getPofile(id: String) {
     setLoading(true);
-    const request: FetchOptionsType = {};
-    request.headers = {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    };
     try {
-      const response = await fetch(`${apiUrl}/v2/users/${id}`, request);
-      if (response.ok) {
-        const user: User = await response.json();
-        setProfile(user);
-      } else {
-        const error = await response.json();
-        router.push({
-          pathname: "/modal",
-          params: { error: error?.message },
-        });
-      }
+      const response = await axiosInstance.get(`/v2/users/${id}`);
+      setProfile(response?.data);
       setLoading(false);
     } catch (error) {
-      console.error(error);
+      setProfile(null);
+      setLoading(false);
     }
   }
 
@@ -45,5 +28,5 @@ export default function profileQuery(id: string): any {
     getPofile(id);
   }, [id]);
 
-  return [isLoading, profile];
+  return [isLoading, profile, setProfile];
 }
