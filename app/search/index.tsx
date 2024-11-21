@@ -10,7 +10,7 @@ import {
   Button,
 } from "react-native";
 import backgorundImage from "@/assets/images/default-cover-image.jpg";
-import defaultProfileImage from "@/assets/images/default.png";
+import defaultProfileImage from "@/assets/images/default.jpg";
 import * as SecureStore from "expo-secure-store";
 import { Colors } from "@/constants/Colors";
 import { ScrollView, TextInput } from "react-native-gesture-handler";
@@ -143,6 +143,7 @@ export default function Search() {
             width: "100%",
             alignItems: "center",
             paddingHorizontal: 20,
+            maxWidth: 800,
           }}
         >
           <SearchBar

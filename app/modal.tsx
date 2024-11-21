@@ -1,11 +1,14 @@
 import SadEmoji from "@/assets/icons/sadEmoji";
 import { Colors } from "@/constants/Colors";
-import { Link, router, useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 import React from "react";
-import { View, Text, ViewStyle, Pressable, StyleSheet } from "react-native";
+import { View, Text, ViewStyle } from "react-native";
 
 export default function Modal() {
-  const { error } = useLocalSearchParams<{ error: string }>();
+  const { error, canBedismiss } = useLocalSearchParams<{
+    error: string;
+    canBedismiss: any;
+  }>();
 
   return (
     <View style={container}>
@@ -23,21 +26,23 @@ export default function Modal() {
             ? error
             : "Something went wrong\n please try later "}
         </Text>
-        <Link href="../" style={{ color: Colors.red, fontSize: 20 }}>
-          close
-        </Link>
+        {canBedismiss && canBedismiss === "yes" && (
+          <Link href="../" style={{ color: Colors.red, fontSize: 20 }}>
+            close
+          </Link>
+        )}
       </View>
     </View>
   );
 }
 
 const container: ViewStyle = {
-  top: 300,
+  top: 250,
   paddingHorizontal: 20,
 };
 
 const errorContainer: ViewStyle = {
-  height: 300,
+  height: 400,
   backgroundColor: Colors.text,
   alignItems: "center",
   justifyContent: "center",

@@ -3,17 +3,26 @@ import * as SecureStore from "expo-secure-store";
 import { OAuthTokenResponse } from "@/constants/types";
 import { refreshToken } from "@/api/api-client";
 
-export const AuthContext = createContext<{ isAuthenticated: boolean }>({
-  isAuthenticated: false,
-});
+export const AuthContext = createContext<
+  [
+    {
+      isAuthenticated: boolean;
+      setIsAuthenticated: any;
+    }
+  ]
+>([
+  {
+    isAuthenticated: false,
+    setIsAuthenticated: {},
+  },
+]);
 
 export const AuthProvider = ({ children }: any) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   useEffect(() => {
     (async () => {
-      const storage = await SecureStore.getItem("token");
-      console.log("storage : ", storage);
+      const storage = await SecureStore.getItemAsync("token");
       if (storage) {
         const token: OAuthTokenResponse = JSON.parse(storage);
         const { refresh_token } = token;
@@ -35,7 +44,7 @@ export const AuthProvider = ({ children }: any) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated }}>
+    <AuthContext.Provider value={[{ isAuthenticated, setIsAuthenticated }]}>
       {children}
     </AuthContext.Provider>
   );

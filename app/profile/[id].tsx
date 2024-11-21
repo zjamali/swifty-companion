@@ -16,16 +16,20 @@ import {
   ScrollView,
 } from "react-native-gesture-handler";
 import { useEffect, useState } from "react";
-import { CursusUser, ProfileType, ProjectUser, User } from "@/constants/types";
+import { CursusUser, ProfileType, ProjectUser } from "@/constants/types";
 import SelectDropdown from "react-native-select-dropdown";
 import DropdownIcon from "@/assets/icons/dropdown";
-import React from "react";
-import defaultProfileImage from "@/assets/images/default.png";
+import defaultProfileImage from "@/assets/images/default.jpg";
 import LocationIcon from "@/assets/icons/location";
 import CheckIcon from "@/assets/icons/validate";
 import FailedIcon from "@/assets/icons/failed";
 import profileQuery from "@/api/profileQuery";
 import { StatusBar } from "expo-status-bar";
+import React from "react";
+import smiledemoji from "@/assets/images/smiledemoji.png";
+import { Platform } from "react-native";
+
+import { Dimensions } from "react-native";
 
 export function Space({ height }: { height: DimensionValue }) {
   return <View style={{ height: height, width: "100%" }}></View>;
@@ -45,8 +49,8 @@ function CursusSelectionDropDown({
   return (
     <>
       <SelectDropdown
-        data={cursusList.map((cursus: CursusUser) => {
-          return { title: cursus.cursus.name };
+        data={cursusList?.map((cursus: CursusUser) => {
+          return { title: cursus?.cursus?.name };
         })}
         onSelect={(selectedItem, index) => {
           setSelectedCursus(cursusList[index]);
@@ -69,7 +73,14 @@ function CursusSelectionDropDown({
                 {selectedCursus?.cursus?.name}
               </Text>
               <DropdownIcon
-                style={{ position: "absolute", left: 110, top: 1 }}
+                style={{
+                  position: "absolute",
+                  left:
+                    (Dimensions.get("screen").width *
+                      (Platform.OS === "android" ? 28 : 33)) /
+                    100,
+                  top: 1,
+                }}
               />
             </View>
           );
@@ -84,12 +95,12 @@ function CursusSelectionDropDown({
               <Text
                 style={{
                   color:
-                    item.title === selectedCursus?.cursus?.name
+                    item?.title === selectedCursus?.cursus?.name
                       ? Colors.tint
                       : Colors.black,
                 }}
               >
-                {item.title}
+                {item?.title}
               </Text>
             </View>
           );
@@ -106,6 +117,13 @@ function Projects({
   projects: ProjectUser[] | [];
   selectedCursus: CursusUser;
 }) {
+  const SelectedProjects = projects
+    .filter((project: ProjectUser) => project?.project?.parent_id === null)
+    .filter(
+      (project: ProjectUser) =>
+        project?.cursus_ids[0] === selectedCursus?.cursus?.id
+    );
+
   return (
     <>
       <Text
@@ -128,13 +146,32 @@ function Projects({
           height: 300,
         }}
       >
-        {projects
-          ?.filter((project: ProjectUser) => project.project.parent_id === null)
-          .filter(
-            (project: ProjectUser) =>
-              project.cursus_ids[0] === selectedCursus?.cursus.id
-          )
-          .map((project: ProjectUser) => {
+        {(!SelectedProjects || SelectedProjects.length == 0) && (
+          <View
+            style={{
+              flex: 1,
+              height: 250,
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: 0.5,
+            }}
+          >
+            <Image source={smiledemoji} style={{ height: 90, width: 90 }} />
+            <Space height={20} />
+            <Text
+              style={{
+                color: Colors.grey,
+                fontSize: 14,
+                textAlign: "center",
+              }}
+            >
+              {"No projects marked\n or in progress"}
+            </Text>
+          </View>
+        )}
+        {SelectedProjects &&
+          SelectedProjects?.length > 0 &&
+          SelectedProjects?.map((project: ProjectUser) => {
             return (
               <View
                 key={project.id}
@@ -146,21 +183,51 @@ function Projects({
                   alignItems: "center",
                 }}
               >
-                <Text style={{ fontSize: 12 }}>{project?.project.name}</Text>
-                {project.status === "finished" && project["validated?"] ? (
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <CheckIcon color={"green"} />
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        color: "green",
-                        fontWeight: 700,
-                      }}
+                <Text style={{ fontSize: 12 }}>{project?.project?.name}</Text>
+                {["in_progress", "finished"].includes(project?.status) &&
+                  project["validated?"] && (
+                    <View
+                      style={{ flexDirection: "row", alignItems: "center" }}
                     >
-                      {project.final_mark}
+                      <CheckIcon color={"green"} />
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          color: "green",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {project?.final_mark}
+                      </Text>
+                    </View>
+                  )}
+                {project?.status === "finished" && !project["validated?"] && (
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <FailedIcon color={"red"} />
+                    <Text
+                      style={{ fontSize: 12, color: "red", fontWeight: 700 }}
+                    >
+                      {project?.final_mark}
                     </Text>
                   </View>
-                ) : project.status === "in_progress" ? (
+                )}
+                {project?.status === "in_progress" &&
+                  !project["validated?"] && (
+                    <View
+                      style={{ flexDirection: "row", alignItems: "center" }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          color: "orange",
+                          fontWeight: 700,
+                        }}
+                      >
+                        In Progress
+                      </Text>
+                    </View>
+                  )}
+                {project?.status === "waiting_for_correction" && (
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
                     <Text
                       style={{
@@ -169,16 +236,7 @@ function Projects({
                         fontWeight: 700,
                       }}
                     >
-                      In Progress{" "}
-                    </Text>
-                  </View>
-                ) : (
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <FailedIcon color={"red"} />
-                    <Text
-                      style={{ fontSize: 12, color: "red", fontWeight: 700 }}
-                    >
-                      {project.final_mark}
+                      Waiting For Correction
                     </Text>
                   </View>
                 )}
@@ -192,6 +250,8 @@ function Projects({
 }
 
 function Skills({ selectedCursus }: { selectedCursus: CursusUser }) {
+  const skills = selectedCursus?.skills;
+  if (!skills || skills?.length === 0) return <></>;
   return (
     <>
       <Text
@@ -215,10 +275,10 @@ function Skills({ selectedCursus }: { selectedCursus: CursusUser }) {
         }}
       >
         {selectedCursus &&
-          selectedCursus.skills.map((skill) => {
+          selectedCursus?.skills.map((skill) => {
             return (
               <View
-                key={skill.id}
+                key={skill?.id}
                 style={{
                   width: "100%",
                   height: 30,
@@ -234,7 +294,7 @@ function Skills({ selectedCursus }: { selectedCursus: CursusUser }) {
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
-                    height: 15,
+                    height: 11,
                     width: 160,
                     borderColor: Colors.cyan,
                     borderWidth: 2,
@@ -244,7 +304,7 @@ function Skills({ selectedCursus }: { selectedCursus: CursusUser }) {
                 >
                   <Text
                     style={{
-                      fontSize: 10,
+                      fontSize: 8,
                       color: Colors.black,
                       fontWeight: 700,
                       position: "absolute",
@@ -252,12 +312,12 @@ function Skills({ selectedCursus }: { selectedCursus: CursusUser }) {
                       zIndex: 1,
                     }}
                   >
-                    {Number((skill.level / 20) * 100).toFixed(2)}%
+                    {Number((skill?.level / 20) * 100).toFixed(2)}%
                   </Text>
                   <View
                     style={{
                       height: 15,
-                      width: `${(skill.level / 20) * 100}%`,
+                      width: `${(skill?.level / 20) * 100}%`,
                       backgroundColor: Colors.cyan,
                       alignItems: "center",
                     }}
@@ -298,11 +358,11 @@ function ProfileInformation({
     } else {
       setLevel({
         level:
-          Number(selectedCursus?.level.toString().split(".")[0]) >= 10
-            ? selectedCursus?.level.toString().split(".")[0]
-            : 0 + selectedCursus?.level.toString().split(".")[0],
-        percentage: selectedCursus?.level.toString().split(".")[1]
-          ? selectedCursus?.level.toFixed(2).toString().split(".")[1]
+          Number(selectedCursus?.level?.toString().split(".")[0]) >= 10
+            ? selectedCursus?.level?.toString().split(".")[0]
+            : 0 + selectedCursus?.level?.toString().split(".")[0],
+        percentage: selectedCursus?.level?.toString().split(".")[1]
+          ? selectedCursus?.level?.toFixed(2).toString().split(".")[1]
           : "0",
       });
     }
@@ -339,7 +399,7 @@ function ProfileInformation({
             flex: 1,
             alignItems: "center",
             flexDirection: "row",
-            width: "80%",
+            width: "90%",
             justifyContent: "space-between",
           }}
         >
@@ -357,7 +417,7 @@ function ProfileInformation({
             flex: 1,
             alignItems: "center",
             flexDirection: "row",
-            width: "80%",
+            width: "90%",
             justifyContent: "space-between",
           }}
         >
@@ -377,14 +437,21 @@ function ProfileInformation({
             flex: 1,
             alignItems: "center",
             flexDirection: "row",
-            width: "80%",
+            width: "90%",
             justifyContent: "space-between",
           }}
         >
-          <Text style={{ color: Colors.text, fontWeight: 500 }}>Grade</Text>
-          <Text style={{ color: Colors.text, fontWeight: 700 }}>
-            {selectedCursus?.grade}{" "}
-          </Text>
+          {!profile["staff?"] && (
+            <>
+              <Text style={{ color: Colors.text, fontWeight: 500 }}>Grade</Text>
+              <Text style={{ color: Colors.text, fontWeight: 700 }}>
+                {selectedCursus?.grade ? selectedCursus?.grade : "Novice"}
+              </Text>
+            </>
+          )}
+          {profile["staff?"] && (
+            <Text style={{ color: Colors.text, fontWeight: 500 }}>STAFF</Text>
+          )}
         </View>
         <View
           style={{
@@ -396,7 +463,7 @@ function ProfileInformation({
             flex: 1,
             alignItems: "center",
             flexDirection: "row",
-            width: "80%",
+            width: "90%",
             justifyContent: "space-between",
           }}
         >
@@ -417,51 +484,53 @@ function ProfileInformation({
           {profile?.city}
         </Text>
       </View>
-      <View
-        style={{
-          gap: 5,
-          height: 50,
-          width: "90%",
-          alignSelf: "center",
-          flexDirection: "row",
-        }}
-      >
-        <Text
+      {level && (
+        <View
           style={{
-            fontSize: 30,
-            fontWeight: 900,
-            color: Colors.text,
-            width: 45,
+            gap: 5,
+            height: 50,
+            width: "90%",
+            alignSelf: "center",
+            flexDirection: "row",
           }}
         >
-          {level?.level}
-        </Text>
-        <View style={{ flex: 1, width: "100%", gap: 2 }}>
-          <Text style={{ fontSize: 12, fontWeight: 900, color: Colors.text }}>
-            {level?.percentage}%
-          </Text>
-          <View
+          <Text
             style={{
-              backgroundColor: "rgb(255,255,255)",
-              height: 10,
-              width: "100%",
-              alignSelf: "flex-start",
-              borderRadius: 5,
-              overflow: "hidden",
+              fontSize: 30,
+              fontWeight: 900,
+              color: Colors.text,
+              width: 45,
             }}
           >
+            {level?.level}
+          </Text>
+          <View style={{ flex: 1, width: "100%", gap: 2 }}>
+            <Text style={{ fontSize: 12, fontWeight: 900, color: Colors.text }}>
+              {level?.percentage}%
+            </Text>
             <View
-              style={
-                {
-                  flex: 1,
-                  backgroundColor: "rgb(35, 90, 22)",
-                  width: `${level?.percentage}%`,
-                } as ViewStyle
-              }
-            ></View>
+              style={{
+                backgroundColor: "rgb(255,255,255)",
+                height: 10,
+                width: "100%",
+                alignSelf: "flex-start",
+                borderRadius: 5,
+                overflow: "hidden",
+              }}
+            >
+              <View
+                style={
+                  {
+                    flex: 1,
+                    backgroundColor: "rgb(35, 90, 22)",
+                    width: `${level?.percentage}%`,
+                  } as ViewStyle
+                }
+              ></View>
+            </View>
           </View>
         </View>
-      </View>
+      )}
     </>
   );
 }
@@ -475,7 +544,11 @@ export default function Profile() {
   useEffect(() => {
     if (profile) {
       setCursusList(profile.cursusList);
-      setSelectedCursus(profile?.cursusList[profile.cursusList.length - 1]);
+      const mainCursus =
+        profile?.cursusList?.find(
+          (cursus) => cursus?.cursus?.kind === "main"
+        ) ?? profile?.cursusList[profile.cursusList.length - 1];
+      setSelectedCursus(mainCursus);
     }
   }, [profile]);
 
@@ -488,23 +561,26 @@ export default function Profile() {
           flex: 1,
           width: "100%",
           alignItems: "center",
-          paddingHorizontal: 20,
+          paddingHorizontal: Platform.OS === "ios" ? 20 : 5,
+          maxWidth: 800,
+          alignSelf: "center",
         }}
       >
+        {Platform.OS === "android" && <Space height={60} />}
         {isLoading && !profile ? (
           <ActivityIndicator style={{ marginTop: 89 }} />
         ) : (
           profile && (
             <ScrollView style={container}>
               <ProfileInformation
-                profile={profile!}
+                profile={profile}
                 cursusList={cursusList}
                 selectedCursus={selectedCursus!}
                 setSelectedCursus={setSelectedCursus}
               />
               <Space height={20} />
               <Projects
-                projects={profile.projects}
+                projects={profile?.projects}
                 selectedCursus={selectedCursus!}
               />
               <Space height={20} />

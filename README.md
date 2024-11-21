@@ -2,8 +2,6 @@
 
 This project is a [React Native](https://reactnative.dev/) application built with [Expo](https://expo.dev) that retrieves and displays information about students enrolled in the 42 School program using the [42 API](https://api.intra.42.fr/apidoc). The 42 API provides a comprehensive set of endpoints to access data on students, including their profiles, achievements, and progress.
 
-
-
 ## Get started
 
 1. Set 42 enviroment
@@ -12,9 +10,9 @@ This project is a [React Native](https://reactnative.dev/) application built wit
    #.env
 
    EXPO_PUBLIC_API_URL=https://api.intra.42.fr/
-   EXPO_PUBLIC_API_SECRET=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
    EXPO_PUBLIC_API_CLIENT=8f31a6c907677ba8fc1e1c61aa88023279115a8d48cee399ecb968e5bca7e98f
-   EXPO_PUBLIC_REDIRECT_URL=app://com.zjamali.swifty.companion
+   EXPO_PUBLIC_API_SECRET=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
+   EXPO_PUBLIC_REDIRECT_URL=exp://10.30.249.17:8081
    ```
 
 2. Install dependencies

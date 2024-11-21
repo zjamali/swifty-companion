@@ -21,7 +21,6 @@ axiosInstance.interceptors.request.use(async function (config) {
       JSON.parse(token);
 
     if (expires_in < new Date().getTime()) {
-      console.log("get new access token using refresh token");
       const token = await refreshToken(refresh_token);
       await SecureStore.setItemAsync(
         "token",
@@ -66,6 +65,7 @@ axiosInstance.interceptors.response.use(
         pathname: "/modal",
         params: {
           error: `${data.error} \n ${data.message}`,
+          canBedismiss: "yes",
         },
       });
       setTimeout(() => {
@@ -77,6 +77,7 @@ axiosInstance.interceptors.response.use(
         pathname: "/modal",
         params: {
           error: `${data.error} \n ${data.message}`,
+          canBedismiss: "yes",
         },
       });
     }
@@ -119,6 +120,12 @@ function transformDataforSearchQuery(data: User[]): SearchUserType[] {
 }
 
 function transformDataforProfile(data: User): ProfileType {
+  const projects = data?.projects_users?.filter((project) =>
+    ["finished", "in_progress", "waiting_for_correction"].includes(
+      project.status
+    )
+  );
+
   return {
     id: data.id ? data.id : 0,
     image: data.image.versions.small ? data.image.versions.small : undefined,
@@ -128,7 +135,8 @@ function transformDataforProfile(data: User): ProfileType {
     correction_point: data.correction_point ? data.correction_point : 0,
     city: data.campus[0].city ? data.campus[0].city : "",
     cursusList: data.cursus_users ? data.cursus_users : [],
-    projects: data.projects_users ? data.projects_users : [],
+    projects: projects ? projects : [],
+    "staff?": data["staff?"],
   };
 }
 

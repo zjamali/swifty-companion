@@ -96,6 +96,7 @@ export type User = {
   projects_users: ProjectUser[];
   campus: Campus[];
   cursus_users: CursusUser[];
+  "staff?": boolean | null;
 };
 
 export type SearchUserType = {
@@ -115,4 +116,5 @@ export type ProfileType = {
   city: string;
   cursusList: CursusUser[] | [];
   projects: ProjectUser[] | [];
+  "staff?": boolean | null;
 };
