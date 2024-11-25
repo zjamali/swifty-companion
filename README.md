@@ -2,9 +2,7 @@
 
 This project is a [React Native](https://reactnative.dev/) application built with [Expo](https://expo.dev) that retrieves and displays information about students enrolled in the 42 School program using the [42 API](https://api.intra.42.fr/apidoc). The 42 API provides a comprehensive set of endpoints to access data on students, including their profiles, achievements, and progress.
 
-
-[![Demo of the app]()]
-
+![](https://github.com/zjamali/swifty-companion/blob/master/record/Simulator%20Screen%20Recording%20-%20iPhone%2015.gif)
 
 ## Get started
 
