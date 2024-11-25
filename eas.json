@@ -1,0 +1,50 @@
+{
+  "cli": {
+    "version": ">= 3.15.1"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.intra.42.fr/",
+        "EXPO_PUBLIC_API_CLIENT": "8f31a6c907677ba8fc1e1c61aa88023279115a8d48cee399ecb968e5bca7e98f",
+        "EXPO_PUBLIC_API_SECRET": "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",
+        "EXPO_PUBLIC_REDIRECT_URL": "exp://10.30.249.17:8081"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.intra.42.fr/",
+        "EXPO_PUBLIC_API_CLIENT": "u-s4t2ud-607b862bf6202f28b4b2651bd215995259758e9566b32226be66c8c7faa01c7b",
+        "EXPO_PUBLIC_API_SECRET": "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",
+        "EXPO_PUBLIC_REDIRECT_URL": "com.zjamali.swifty.companion://auth"
+      }
+    },
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.intra.42.fr/",
+        "EXPO_PUBLIC_API_CLIENT": "u-s4t2ud-607b862bf6202f28b4b2651bd215995259758e9566b32226be66c8c7faa01c7b",
+        "EXPO_PUBLIC_API_SECRET": "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",
+        "EXPO_PUBLIC_REDIRECT_URL": "com.zjamali.swifty.companion://auth"
+      }
+    },
+    "development-simulator": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.intra.42.fr/",
+        "EXPO_PUBLIC_API_CLIENT": "8f31a6c907677ba8fc1e1c61aa88023279115a8d48cee399ecb968e5bca7e98f",
+        "EXPO_PUBLIC_API_SECRET": "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",
+        "EXPO_PUBLIC_REDIRECT_URL": "com.zjamali.swifty.companion"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
